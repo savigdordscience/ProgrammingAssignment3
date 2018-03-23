@@ -18,21 +18,26 @@ rankhospital <- function(state, outcome, num = "best") {
     columnName = "Hospital.30.Day.Death..Mortality..Rates.from.Pneumonia"
   else
     stop("invalid outcome")
+  ## Initializing an empty hospitals vector 
   hospitals = c();
   ## Return hospital name in that state with the given rank
   ## 30-day death rate
+  ## Selecting all of the rows according to the state in interest
   recordsByState <- subset(outcomeData, State == state)
-  write.csv(recordsByState,"as3-rcbs.csv")
+  ## Defining which row should be selected from the sorted and selected rows
   if (num == "best")
-    rowNumber = 1
-  else if (num == "worst")
-    rowNumber = -1
+    rowNumber <- 1
+  else if (num == "worst") 
+    rowNumber <- -1 
   else 
-    rowNumber = num;
+    rowNumber <- num;
+  ## Return NA in case there aren't enough rows to supply the request
   if (NROW(recordsByState) < rowNumber)
     return(NA)
+  ## Changing the selected outcome column into a numeric one
   recordsByState[,columnName] <- sapply(recordsByState[,columnName],as.numeric)
-  write.csv(recordsByState,"as3-rcbs-numeric.csv")
+
+  ## Sort the records by state and define which row number to select  
   if (rowNumber > 0)
     recordsByStateSorted <- recordsByState[with(recordsByState,order(recordsByState[columnName],recordsByState["Hospital.Name"])),]
   else if (rowNumber < 0)
@@ -40,9 +45,10 @@ rankhospital <- function(state, outcome, num = "best") {
     recordsByStateSorted <- recordsByState[with(recordsByState,order(-recordsByState[columnName],recordsByState["Hospital.Name"])),]
     rowNumber <- -rowNumber
   }
-  write.csv(recordsByStateSorted,"as3-rcbs-sorted.csv")
+  ## In case outcome is NA stop, and return NA.
   if (is.na(recordsByStateSorted[1,columnName]))
     return(NA);
+  ## Return the list of hostpitals from the selected subset of rows.
   hospitals <- rbind(hospitals,recordsByStateSorted[rowNumber,"Hospital.Name"])
   return(hospitals)
 }
