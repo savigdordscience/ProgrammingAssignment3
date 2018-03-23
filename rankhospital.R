@@ -6,7 +6,7 @@ rankhospital <- function(state, outcome, num = "best") {
   ## Check that state and outcome are valid
   validState = (state %in% unique(outcomeData[,7]))
   if (!validState)
-      stop("invalid state")
+    stop("invalid state")
   
   ## Return hospital name in that state with lowest 30-day death
   ## rate
@@ -24,28 +24,25 @@ rankhospital <- function(state, outcome, num = "best") {
   recordsByState <- subset(outcomeData, State == state)
   write.csv(recordsByState,"as3-rcbs.csv")
   if (num == "best")
-      maxRows = 1
+    rowNumber = 1
   else if (num == "worst")
-           maxRows = -1
+    rowNumber = -1
   else 
-      maxRows = num;
-  if (NROW(recordsByState) < maxRows)
-      return(NA)
+    rowNumber = num;
+  if (NROW(recordsByState) < rowNumber)
+    return(NA)
   recordsByState[,columnName] <- sapply(recordsByState[,columnName],as.numeric)
   write.csv(recordsByState,"as3-rcbs-numeric.csv")
-  if (maxRows > 0)
-      recordsByStateSorted <- recordsByState[with(recordsByState,order(recordsByState[columnName],recordsByState["Hospital.Name"])),]
-  else if (maxRows < 0)
-       {
-           recordsByStateSorted <- recordsByState[with(recordsByState,order(-recordsByState[columnName],recordsByState["Hospital.Name"])),]
-           maxRows <- -maxRows
-       }
+  if (rowNumber > 0)
+    recordsByStateSorted <- recordsByState[with(recordsByState,order(recordsByState[columnName],recordsByState["Hospital.Name"])),]
+  else if (rowNumber < 0)
+  {
+    recordsByStateSorted <- recordsByState[with(recordsByState,order(-recordsByState[columnName],recordsByState["Hospital.Name"])),]
+    rowNumber <- -rowNumber
+  }
   write.csv(recordsByStateSorted,"as3-rcbs-sorted.csv")
   if (is.na(recordsByStateSorted[1,columnName]))
-      return(NA);
-  for (i in 1:maxRows)
-  {
-    hospitals <- rbind(hospitals,recordsByStateSorted[i,"Hospital.Name"])
-  }
+    return(NA);
+  hospitals <- rbind(hospitals,recordsByStateSorted[rowNumber,"Hospital.Name"])
   return(hospitals)
 }
